@@ -14,7 +14,7 @@ public class HomeController {
     @ResponseBody
     public ModelAndView index() {
 
-        return new ModelAndView("main");
+        return new ModelAndView("home/index");
     }
 
 }
