@@ -1,9 +1,13 @@
 package edu.umg.farm.arduino;
 
 import edu.umg.farm.arduino.model.HumidityRead;
-import io.vavr.control.Either;
+
+import java.util.Optional;
 
 public interface ArduinoClient {
 
-    Either<String, HumidityRead> readHumiditySensor();
+    Optional<HumidityRead> readHumiditySensor();
+
+    void startWaterPump();
+    void stopWaterPump();
 }

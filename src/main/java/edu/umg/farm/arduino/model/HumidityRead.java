@@ -14,5 +14,4 @@ import lombok.ToString;
 public class HumidityRead {
 
     private long value;
-    private boolean error;
 }

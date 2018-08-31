@@ -1,31 +1,36 @@
 package edu.umg.farm.arduino;
 
 import edu.umg.farm.arduino.model.HumidityRead;
-import io.vavr.control.Either;
-import io.vavr.control.Try;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 public class ArduinoDummyClient implements ArduinoClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ArduinoDummyClient.class);
 
     @Override
-    public Either<String, HumidityRead> readHumiditySensor() {
+    public Optional<HumidityRead> readHumiditySensor() {
 
-        return Try.of(() -> {
+        var value = RandomUtils.nextLong(1, 25);
+        logger.info("value read: {}", value);
 
-            var value = RandomUtils.nextLong(1, 25);
-            logger.info("value read: {}", value);
+        var result = HumidityRead.builder()
+                .value(value)
+                .build();
 
-            return HumidityRead.builder()
-                    .value(value)
-                    .build();
+        return Optional.of(result);
+    }
 
-        }).onSuccess(read -> logger.info("value read: {}", read))
-                .onFailure(ex -> logger.error("can't read from external sensor: ", ex))
-                .toEither()
-                .mapLeft(ex -> "can't read from sensor");
+    @Override
+    public void startWaterPump() {
+        logger.info("water pump started");
+    }
+
+    @Override
+    public void stopWaterPump() {
+        logger.info("water pump stopped");
     }
 }
