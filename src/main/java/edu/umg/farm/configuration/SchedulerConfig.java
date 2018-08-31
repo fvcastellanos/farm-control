@@ -19,8 +19,21 @@ public class SchedulerConfig {
     @Value("${farm.job.repeat.interval:30000}")
     private long repeatInterval;
 
+//    @Bean
+//    public JobDetailFactoryBean jobDetailFactoryBean(ApplicationContext applicationContext) {
+//
+//        var jobDetailFactoryBean = new JobDetailFactoryBean();
+//        jobDetailFactoryBean.setApplicationContext(applicationContext);
+//        jobDetailFactoryBean.setJobClass(LoggerJob.class);
+//        jobDetailFactoryBean.setName("LoggerJob");
+//        jobDetailFactoryBean.setGroup("FarmGroup");
+//        jobDetailFactoryBean.setDurability(true);
+//
+//        return jobDetailFactoryBean;
+//    }
+
     @Bean
-    public JobDetail buildLoggerJob() {
+    public JobDetail readHumidityJobDetail() {
         return newJob()
                 .ofType(LoggerJob.class)
                 .withIdentity("LoggerJob", "FarmGroup")
@@ -29,10 +42,10 @@ public class SchedulerConfig {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean simpleTriggerFactoryBean(JobDetail loggerJob) {
+    public SimpleTriggerFactoryBean simpleTriggerFactoryBean(JobDetail readHumidityJobDetail) {
 
         var triggerFactoryBean = new SimpleTriggerFactoryBean();
-        triggerFactoryBean.setJobDetail(loggerJob);
+        triggerFactoryBean.setJobDetail(readHumidityJobDetail);
         triggerFactoryBean.setStartDelay(triggerStartDelay);
         triggerFactoryBean.setRepeatInterval(repeatInterval);
         triggerFactoryBean.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
