@@ -11,7 +11,8 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class HumidityRead {
+public class SensorRead {
 
-    private long value;
+    private double humidityValue;
+    private double temperatureValue;
 }

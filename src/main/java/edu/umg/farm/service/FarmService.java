@@ -1,9 +1,9 @@
 package edu.umg.farm.service;
 
 import edu.umg.farm.arduino.ArduinoClient;
-import edu.umg.farm.arduino.model.HumidityRead;
+import edu.umg.farm.dao.ReadEventDao;
+import edu.umg.farm.dao.model.ReadEvent;
 import edu.umg.farm.service.model.FarmContext;
-import io.vavr.control.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,21 +13,27 @@ public class FarmService {
 
     private static final Logger logger = LoggerFactory.getLogger(FarmService.class);
 
-    private long humidityThreshold;
+    private double humidityThreshold;
+    private double temperatureThreshold;
 
     private ArduinoClient arduinoClient;
 
-    public FarmService(long humidityThreshold, ArduinoClient arduinoClient) {
+    private ReadEventDao readEventDao;
+
+    public FarmService(double humidityThreshold, double temperatureThreshold, ArduinoClient arduinoClient, ReadEventDao readEventDao) {
         this.humidityThreshold = humidityThreshold;
+        this.temperatureThreshold = temperatureThreshold;
         this.arduinoClient = arduinoClient;
+        this.readEventDao = readEventDao;
     }
 
     public void checkSoil() {
 
-        performHumidityRead()
+        var resultHolder = performHumidityRead()
                 .flatMap(this::turnOnWaterPumpIfNecessary)
                 .flatMap(this::publishResult);
 
+        resultHolder.ifPresent(result -> logger.info("soil status: {}", resultHolder.get()));
     }
 
     private Optional<FarmContext> performHumidityRead() {
@@ -39,7 +45,7 @@ public class FarmService {
         if (humidityReadHolder.isPresent()) {
 
             var context = contextBuilder(false)
-                    .humidityRead(humidityReadHolder.get())
+                    .sensorRead(humidityReadHolder.get())
                     .build();
 
             return Optional.of(context);
@@ -52,8 +58,8 @@ public class FarmService {
 
     private Optional<FarmContext> turnOnWaterPumpIfNecessary(FarmContext farmContext) {
 
-        var humidityRead = farmContext.getHumidityRead();
-        var value = humidityRead.getValue();
+        var sensorRead = farmContext.getSensorRead();
+        var value = sensorRead.getHumidityValue();
 
         if (value < humidityThreshold) {
 
@@ -65,22 +71,44 @@ public class FarmService {
         }
 
         logger.info("looks like humidity is at good level");
+
+        arduinoClient.stopWaterPump();
         farmContext.setPumpActivated(false);
+
         return Optional.of(farmContext);
     }
 
     private Optional<FarmContext> publishResult(FarmContext farmContext) {
 
         logger.info("publishing read result: {}", farmContext);
-        return Optional.of(farmContext);
 
+        var readEvent = buildReadEvent(farmContext);
+        readEventDao.saveReadEvent(readEvent);
+
+        return Optional.of(farmContext);
     }
 
     private FarmContext.FarmContextBuilder contextBuilder(boolean readError) {
 
         return FarmContext.builder()
                 .humidityThreshold(humidityThreshold)
+                .temperatureThreshold(temperatureThreshold)
                 .readError(readError);
+    }
+
+    private ReadEvent buildReadEvent(FarmContext farmContext) {
+
+        var sensorRead = farmContext.getSensorRead();
+
+        return ReadEvent.builder()
+                .humidityValue(sensorRead.getHumidityValue())
+                .humidityThreshold(farmContext.getHumidityThreshold())
+                .temperatureValue(sensorRead.getTemperatureValue())
+                .temperatureThreshold(farmContext.getTemperatureThreshold())
+                .readError(farmContext.isReadError())
+                .pumpActivated(farmContext.isPumpActivated())
+                .message(farmContext.getMessage())
+                .build();
     }
 
 }

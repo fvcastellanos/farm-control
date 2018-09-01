@@ -18,8 +18,11 @@ public class ReadEvent {
 
     private long id;
     private Date created;
-    private long value;
-    private long humidityThreshold;
+    private double temperatureValue;
+    private String temperatureDimension;
+    private double temperatureThreshold;
+    private double humidityValue;
+    private double humidityThreshold;
     private boolean pumpActivated;
     private boolean readError;
     private String message;

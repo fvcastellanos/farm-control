@@ -1,12 +1,12 @@
 package edu.umg.farm.arduino;
 
-import edu.umg.farm.arduino.model.HumidityRead;
+import edu.umg.farm.arduino.model.SensorRead;
 
 import java.util.Optional;
 
 public interface ArduinoClient {
 
-    Optional<HumidityRead> readHumiditySensor();
+    Optional<SensorRead> readHumiditySensor();
 
     void startWaterPump();
     void stopWaterPump();

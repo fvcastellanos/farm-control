@@ -1,6 +1,6 @@
 package edu.umg.farm.arduino;
 
-import edu.umg.farm.arduino.model.HumidityRead;
+import edu.umg.farm.arduino.model.SensorRead;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +12,15 @@ public class ArduinoDummyClient implements ArduinoClient {
     private static final Logger logger = LoggerFactory.getLogger(ArduinoDummyClient.class);
 
     @Override
-    public Optional<HumidityRead> readHumiditySensor() {
+    public Optional<SensorRead> readHumiditySensor() {
 
-        var value = RandomUtils.nextLong(1, 25);
-        logger.info("value read: {}", value);
+        var humidityValue = RandomUtils.nextDouble(1, 25);
+        var temperatureValue = RandomUtils.nextDouble(1, 25);
+        logger.info("temperature: {}, humidity: {} read", temperatureValue, humidityValue);
 
-        var result = HumidityRead.builder()
-                .value(value)
+        var result = SensorRead.builder()
+                .temperatureValue(temperatureValue)
+                .humidityValue(humidityValue)
                 .build();
 
         return Optional.of(result);

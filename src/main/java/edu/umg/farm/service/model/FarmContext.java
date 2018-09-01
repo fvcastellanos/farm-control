@@ -1,6 +1,6 @@
 package edu.umg.farm.service.model;
 
-import edu.umg.farm.arduino.model.HumidityRead;
+import edu.umg.farm.arduino.model.SensorRead;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,9 +14,10 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class FarmContext {
 
-    private HumidityRead humidityRead;
+    private SensorRead sensorRead;
     private boolean readError;
     private String message;
-    private long humidityThreshold;
+    private double humidityThreshold;
+    private double temperatureThreshold;
     private boolean pumpActivated;
 }
