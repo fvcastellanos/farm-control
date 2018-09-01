@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -42,10 +43,28 @@ public class FarmServiceTest {
 
         expectSensorRead(11, 14);
         expectSuccessEventPublished();
+        expectPumpActivation(false);
 
         farmService.checkSoil();
 
         verify(arduinoClient).readHumiditySensor();
+        verify(arduinoClient).stopWaterPump();
+        verify(readEventDao).saveReadEvent(any(ReadEvent.class));
+
+        verifyNoMoreInteractions(arduinoClient, readEventDao);
+    }
+
+    @Test
+    public void pumpActivationTest() {
+
+        expectSensorRead(8, 10);
+        expectSuccessEventPublished();
+        expectPumpActivation(true);
+
+        farmService.checkSoil();
+
+        verify(arduinoClient).readHumiditySensor();
+        verify(arduinoClient).startWaterPump();
         verify(readEventDao).saveReadEvent(any(ReadEvent.class));
 
         verifyNoMoreInteractions(arduinoClient, readEventDao);
@@ -70,6 +89,19 @@ public class FarmServiceTest {
 
         doReturn(readEvent)
                 .when(readEventDao).saveReadEvent(any(ReadEvent.class));
+    }
+
+    private void expectPumpActivation(boolean activation) {
+
+        if (activation) {
+            doNothing()
+                    .when(arduinoClient).startWaterPump();
+
+            return;
+        }
+
+        doNothing()
+                .when(arduinoClient).stopWaterPump();
     }
 
 }

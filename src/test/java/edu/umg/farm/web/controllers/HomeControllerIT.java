@@ -1,4 +1,4 @@
-package edu.umg.farm.controllers;
+package edu.umg.farm.web.controllers;
 
 import edu.umg.farm.BaseIT;
 import org.junit.Test;

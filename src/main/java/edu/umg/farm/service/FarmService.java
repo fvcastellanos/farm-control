@@ -4,6 +4,7 @@ import edu.umg.farm.arduino.ArduinoClient;
 import edu.umg.farm.dao.ReadEventDao;
 import edu.umg.farm.dao.model.ReadEvent;
 import edu.umg.farm.service.model.FarmContext;
+import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class FarmService {
                 .flatMap(this::turnOnWaterPumpIfNecessary)
                 .flatMap(this::publishResult);
 
-        resultHolder.ifPresent(result -> logger.info("soil status: {}", resultHolder.get()));
+        resultHolder.ifPresent(result -> logger.info("soil status: {}", result));
     }
 
     private Optional<FarmContext> performHumidityRead() {
@@ -80,12 +81,20 @@ public class FarmService {
 
     private Optional<FarmContext> publishResult(FarmContext farmContext) {
 
-        logger.info("publishing read result: {}", farmContext);
+        try {
 
-        var readEvent = buildReadEvent(farmContext);
-        readEventDao.saveReadEvent(readEvent);
+            logger.info("publishing read result: {}", farmContext);
 
-        return Optional.of(farmContext);
+            var readEvent = buildReadEvent(farmContext);
+            readEventDao.saveReadEvent(readEvent);
+
+            return Optional.of(farmContext);
+
+        } catch (Exception ex) {
+
+            logger.error("can't read from sensor...", ex);
+            return Optional.empty();
+        }
     }
 
     private FarmContext.FarmContextBuilder contextBuilder(boolean readError) {
