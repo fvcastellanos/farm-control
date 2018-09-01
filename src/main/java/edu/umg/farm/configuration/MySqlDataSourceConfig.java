@@ -2,9 +2,13 @@ package edu.umg.farm.configuration;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -21,9 +25,9 @@ public class MySqlDataSourceConfig {
 
     public MySqlDataSourceConfig(@Value("${datasource.mysql.host:127.0.0.1}") final String host,
                                  @Value("${datasource.mysql.port:3306}") final String port,
-                                 @Value("${datasource.mysql.username:root}") final String username,
-                                 @Value("${datasource.mysql.password:r00t}") final String password,
-                                 @Value("${datasource.mysql.database:todo}") final String database) {
+                                 @Value("${datasource.mysql.username:farm_control}") final String username,
+                                 @Value("${datasource.mysql.password:control123}") final String password,
+                                 @Value("${datasource.mysql.database:farm_control}") final String database) {
         this.host = host;
         this.port = port;
         this.username = username;
@@ -41,6 +45,22 @@ public class MySqlDataSourceConfig {
         hikariConfig.setPassword(this.password);
 
         return new HikariDataSource(hikariConfig);
+    }
+
+    @Bean
+    public SqlSessionFactoryBean sqlSessionFactory(final DataSource mySqlDataSource) throws Exception {
+        final var sqlSessionFactoryBean = new SqlSessionFactoryBean();
+        sqlSessionFactoryBean.setDataSource(mySqlDataSource);
+
+        final var pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
+        sqlSessionFactoryBean.setMapperLocations(pathMatchingResourcePatternResolver.getResources("classpath:/mybatis/*.xml"));
+
+        return sqlSessionFactoryBean;
+    }
+
+    @Bean
+    public SqlSessionTemplate sqlSessionTemplate(final SqlSessionFactory sqlSessionFactory) {
+        return new SqlSessionTemplate(sqlSessionFactory);
     }
 
     @Bean

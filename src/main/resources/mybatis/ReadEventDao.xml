@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ReadEventDao">
+
+    <resultMap id="readEvent" type="edu.umg.farm.dao.model.ReadEvent">
+        <result column="id" property="id"/>
+        <result column="created" property="created"/>
+        <result column="temperature_value" property="temperatureValue"/>
+        <result column="temperature_threshold" property="temperatureThreshold"/>
+        <result column="humidity_value" property="humidityValue"/>
+        <result column="humidity_threshold" property="humidityThreshold"/>
+        <result column="pump_activated" property="pumpActivated"/>
+        <result column="read_error" property="readError"/>
+        <result column="message" property="message"/>
+    </resultMap>
+
+    <insert id="newEvent" parameterType="edu.umg.farm.dao.model.ReadEvent" useGeneratedKeys="true" keyProperty="id">
+        insert into sense_history
+        (created, temperature_value, temperature_dimension, temperature_threshold, humidity_value, humidity_threshold, pump_activated,
+         read_error, message)
+        values
+        (now(), #{temperatureValue}, #{temperatureDimension}, #{temperatureThreshold}, #{humidityValue}, #{humidityThreshold}, #{pumpActivated},
+         #{readError}, #{message})
+    </insert>
+
+</mapper>
