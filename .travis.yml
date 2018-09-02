@@ -5,7 +5,7 @@ jobs:
   - stage: test
     script: mvn clean test
 
-  - stage: it
+  - stage: integration
     script: mvn clean package
 
   - stage: performance
