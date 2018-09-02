@@ -1,14 +1,21 @@
 language: java
 
+sudo: enabled
+
+before_install:
+  - sudo apt-get install jmeter
+
 jobs:
   include:
   - stage: test
-    script: mvn clean test
+    script:
+      - ./scripts/bash/unit-test.sh
 
   - stage: integration
-    script: mvn clean package
+    script:
+      - ./scripts/bash/it-tset.sh
 
-  - stage: performance
-    script: echo "hello world"
+#  - stage: performance
+#    script: echo "hello world"
 
 
