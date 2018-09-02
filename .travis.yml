@@ -1,6 +1,6 @@
 language: java
-
 sudo: enabled
+jdk: openjdk10
 
 before_install:
   - sudo apt-get install jmeter
