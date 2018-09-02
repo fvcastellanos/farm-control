@@ -3,6 +3,7 @@ sudo: enabled
 jdk: openjdk10
 
 before_install:
+  - sudo chmod +x scripts/bash/*
   - sudo apt-get install jmeter
 
 jobs:
