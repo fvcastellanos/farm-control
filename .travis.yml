@@ -1,0 +1,14 @@
+language: java
+
+jobs:
+  include:
+  - stage: test
+    script: mvn clean test
+
+  - stage: it
+    script: mvn clean package
+
+  - stage: performance
+    script: echo "hello world"
+
+
