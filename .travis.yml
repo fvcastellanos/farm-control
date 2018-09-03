@@ -14,7 +14,7 @@ jobs:
 
   - stage: integration
     script:
-      - ./scripts/bash/it-tset.sh
+      - ./scripts/bash/it-test.sh
 
 #  - stage: performance
 #    script: echo "hello world"
