@@ -20,10 +20,10 @@ CREATE USER IF NOT EXISTS 'farm_control'@'localhost'
 CREATE USER IF NOT EXISTS 'farm_control'@'%'
   IDENTIFIED BY 'control123';
 
-GRANT ALL PRIVILEGES ON wcapture.* TO 'farm_control'@'localhost'
+GRANT ALL PRIVILEGES ON farm_control.* TO 'farm_control'@'localhost'
 IDENTIFIED BY 'control123';
 
-GRANT ALL PRIVILEGES ON wcapture.* TO 'farm_control'@'%'
+GRANT ALL PRIVILEGES ON farm_control.* TO 'farm_control'@'%'
 IDENTIFIED BY 'control123';
 
 FLUSH PRIVILEGES;
