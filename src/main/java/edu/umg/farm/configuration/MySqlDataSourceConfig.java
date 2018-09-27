@@ -23,7 +23,7 @@ public class MySqlDataSourceConfig {
     private final String password;
     private final String database;
 
-    public MySqlDataSourceConfig(@Value("${datasource.mysql.host:127.0.0.1}") final String host,
+    public MySqlDataSourceConfig(@Value("${datasource.mysql.host:mysql-host}") final String host,
                                  @Value("${datasource.mysql.port:3306}") final String port,
                                  @Value("${datasource.mysql.username:farm_control}") final String username,
                                  @Value("${datasource.mysql.password:control123}") final String password,
