@@ -1,7 +1,7 @@
 package edu.umg.farm.configuration;
 
-import edu.umg.farm.arduino.ArduinoClient;
 import edu.umg.farm.dao.ReadEventDao;
+import edu.umg.farm.pi.client.PiClient;
 import edu.umg.farm.service.FarmService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,9 +17,9 @@ public class ServiceConfig {
     private long temperatureThreshold;
 
     @Bean
-    public FarmService farmService(ArduinoClient arduinoClient, ReadEventDao readEventDao) {
+    public FarmService farmService(PiClient piClient, ReadEventDao readEventDao) {
 
-        return new FarmService(humidityThreshold, temperatureThreshold, arduinoClient, readEventDao);
+        return new FarmService(humidityThreshold, temperatureThreshold, piClient, readEventDao);
     }
 
 }

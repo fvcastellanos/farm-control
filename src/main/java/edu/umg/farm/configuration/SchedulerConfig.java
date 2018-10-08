@@ -12,7 +12,7 @@ import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import static org.quartz.JobBuilder.newJob;
 
 @Configuration
-@ConditionalOnProperty("${farm.control.scheduler.on:true}")
+@ConditionalOnProperty("farm.control.scheduler.on")
 public class SchedulerConfig {
 
     @Value("${farm.job.start.delay:5000}")
@@ -22,7 +22,7 @@ public class SchedulerConfig {
     private long repeatInterval;
 
     @Bean
-    public JobDetail readHumidityJobDetail() {
+    public JobDetail readSensorsJobDetail() {
         return newJob()
                 .ofType(LoggerJob.class)
                 .withIdentity("LoggerJob", "FarmGroup")
@@ -31,10 +31,10 @@ public class SchedulerConfig {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean simpleTriggerFactoryBean(JobDetail readHumidityJobDetail) {
+    public SimpleTriggerFactoryBean simpleTriggerFactoryBean(JobDetail readSensorsJobDetail) {
 
         var triggerFactoryBean = new SimpleTriggerFactoryBean();
-        triggerFactoryBean.setJobDetail(readHumidityJobDetail);
+        triggerFactoryBean.setJobDetail(readSensorsJobDetail);
         triggerFactoryBean.setStartDelay(triggerStartDelay);
         triggerFactoryBean.setRepeatInterval(repeatInterval);
         triggerFactoryBean.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);

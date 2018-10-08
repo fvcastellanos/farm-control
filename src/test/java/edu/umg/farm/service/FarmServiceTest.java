@@ -1,9 +1,12 @@
 package edu.umg.farm.service;
 
-import edu.umg.farm.arduino.ArduinoClient;
-import edu.umg.farm.arduino.model.SensorRead;
 import edu.umg.farm.dao.ReadEventDao;
 import edu.umg.farm.dao.model.ReadEvent;
+import edu.umg.farm.pi.client.PiClient;
+import edu.umg.farm.pi.model.PiHumidityResponse;
+import edu.umg.farm.pi.model.PiResponse;
+import edu.umg.farm.pi.model.PiTemperatureResponse;
+import edu.umg.farm.pi.model.WaterPumpState;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -12,7 +15,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -20,13 +22,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public class FarmServiceTest {
 
     private final static double HUMIDITY_THRESHOLD = 10;
-    private final static double TEMPERATURE_THRESHOLD = 10;
+    private final static double TEMPERATURE_THRESHOLD = 15;
 
     @Mock
     private ReadEventDao readEventDao;
 
     @Mock
-    private ArduinoClient arduinoClient;
+    private PiClient piClient;
 
     private FarmService farmService;
 
@@ -35,7 +37,7 @@ public class FarmServiceTest {
 
         MockitoAnnotations.initMocks(this);
 
-        farmService = new FarmService(HUMIDITY_THRESHOLD, TEMPERATURE_THRESHOLD, arduinoClient, readEventDao);
+        farmService = new FarmService(HUMIDITY_THRESHOLD, TEMPERATURE_THRESHOLD, piClient, readEventDao);
     }
 
     @Test
@@ -47,11 +49,12 @@ public class FarmServiceTest {
 
         farmService.checkSoil();
 
-        verify(arduinoClient).readHumiditySensor();
-        verify(arduinoClient).stopWaterPump();
+        verify(piClient).readHumidity();
+        verify(piClient).readTemperature();
+        verify(piClient).setWaterPump(WaterPumpState.OFF);
         verify(readEventDao).saveReadEvent(any(ReadEvent.class));
 
-        verifyNoMoreInteractions(arduinoClient, readEventDao);
+        verifyNoMoreInteractions(piClient, readEventDao);
     }
 
     @Test
@@ -63,22 +66,27 @@ public class FarmServiceTest {
 
         farmService.checkSoil();
 
-        verify(arduinoClient).readHumiditySensor();
-        verify(arduinoClient).startWaterPump();
+        verify(piClient).readHumidity();
+        verify(piClient).readTemperature();
+        verify(piClient).setWaterPump(WaterPumpState.ON);
         verify(readEventDao).saveReadEvent(any(ReadEvent.class));
 
-        verifyNoMoreInteractions(arduinoClient, readEventDao);
+        verifyNoMoreInteractions(piClient, readEventDao);
     }
 
     private void expectSensorRead(double humidityValue, double temperatureValue) {
 
-        var sensorRead = SensorRead.builder()
-                .humidityValue(humidityValue)
-                .temperatureValue(temperatureValue)
-                .build();
+        var humidityResponse = new PiHumidityResponse();
+        humidityResponse.setHumidity(humidityValue);
 
-        doReturn(Optional.of(sensorRead))
-                .when(arduinoClient).readHumiditySensor();
+        doReturn(Optional.of(humidityResponse))
+                .when(piClient).readHumidity();
+
+        var temperatureResponse = new PiTemperatureResponse();
+        temperatureResponse.setTemperature(temperatureValue);
+
+        doReturn(Optional.of(temperatureResponse))
+                .when(piClient).readTemperature();
     }
 
     private void expectSuccessEventPublished() {
@@ -93,15 +101,20 @@ public class FarmServiceTest {
 
     private void expectPumpActivation(boolean activation) {
 
+        var activationResponse = new PiResponse();
+        activationResponse.setRequestId("blah...");
+
+        var responseHolder = Optional.of(activationResponse);
+
         if (activation) {
-            doNothing()
-                    .when(arduinoClient).startWaterPump();
+            doReturn(responseHolder)
+                    .when(piClient).setWaterPump(WaterPumpState.ON);
 
             return;
         }
 
-        doNothing()
-                .when(arduinoClient).stopWaterPump();
+        doReturn(responseHolder)
+                .when(piClient).setWaterPump(WaterPumpState.OFF);
     }
 
 }
