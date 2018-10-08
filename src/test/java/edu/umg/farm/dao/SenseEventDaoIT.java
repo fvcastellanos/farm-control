@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
@@ -28,6 +31,17 @@ public class SenseEventDaoIT extends BaseIT {
         var expectedEvent = getEventById(savedEvent.getId());
 
         assertThat(savedEvent).isEqualToIgnoringGivenFields(expectedEvent, "created");
+    }
+
+    @Test
+    public void getLatestEvents() {
+
+        var event = readEventDao.saveReadEvent(buildEvent());
+//        var expectedEvent = getEventById(event.getId());
+
+        List<ReadEvent> events = readEventDao.getLatestReadEvents(10);
+
+        assertTrue(events.size() <= 10);
     }
 
     private ReadEvent buildEvent() {
@@ -59,7 +73,6 @@ public class SenseEventDaoIT extends BaseIT {
                         .message(rs.getString("message"))
                         .build()
         );
-
     }
 
     private static class SqlStatements {

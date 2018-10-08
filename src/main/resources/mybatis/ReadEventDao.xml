@@ -9,6 +9,7 @@
         <result column="created" property="created"/>
         <result column="temperature_value" property="temperatureValue"/>
         <result column="temperature_threshold" property="temperatureThreshold"/>
+        <result column="temperature_dimension" property="temperatureDimension" />
         <result column="humidity_value" property="humidityValue"/>
         <result column="humidity_threshold" property="humidityThreshold"/>
         <result column="pump_activated" property="pumpActivated"/>
@@ -24,5 +25,12 @@
         (now(), #{temperatureValue}, #{temperatureDimension}, #{temperatureThreshold}, #{humidityValue}, #{humidityThreshold}, #{pumpActivated},
          #{readError}, #{message})
     </insert>
+
+    <select id="readLatestEvents" resultMap="readEvent" parameterType="java.lang.Integer">
+        select *
+        from sense_history
+        order by id desc
+        limit #{maxLimit}
+    </select>
 
 </mapper>
