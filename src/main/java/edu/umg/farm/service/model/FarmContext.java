@@ -1,6 +1,5 @@
 package edu.umg.farm.service.model;
 
-import edu.umg.farm.arduino.model.SensorRead;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package edu.umg.farm.arduino.model;
+package edu.umg.farm.service.model;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
