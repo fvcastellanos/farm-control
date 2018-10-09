@@ -36,12 +36,13 @@ public class SenseEventDaoIT extends BaseIT {
     @Test
     public void getLatestEvents() {
 
-        var event = readEventDao.saveReadEvent(buildEvent());
-//        var expectedEvent = getEventById(event.getId());
+        var id = insertSenseEvent(buildEvent());
+        var expectedRead = getEventById(id);
 
         List<ReadEvent> events = readEventDao.getLatestReadEvents(10);
 
         assertTrue(events.size() <= 10);
+        assertTrue(events.stream().anyMatch(event -> event.getId() == expectedRead.getId()));
     }
 
     private ReadEvent buildEvent() {
@@ -75,12 +76,32 @@ public class SenseEventDaoIT extends BaseIT {
         );
     }
 
+    private Long insertSenseEvent(ReadEvent readEvent) {
+
+        jdbcTemplate.update(SqlStatements.INSERT_SENSE_EVENT.toString(), readEvent.getTemperatureValue(), readEvent.getTemperatureDimension(),
+                readEvent.getTemperatureThreshold(), readEvent.getHumidityValue(), readEvent.getHumidityThreshold(),
+                readEvent.isReadError(), readEvent.isPumpActivated(), readEvent.getMessage());
+
+        return jdbcTemplate.queryForObject(SqlStatements.LAST_INSERT_ID.toString(), Long.class);
+    }
+
     private static class SqlStatements {
 
-        public static SQL SELECT_SENSE_EVENT = new SQL() {{
+        static SQL SELECT_SENSE_EVENT = new SQL() {{
             SELECT("*");
             FROM("sense_history");
             WHERE("id = ?");
+        }};
+
+        static SQL LAST_INSERT_ID = new SQL() {{
+           SELECT("last_insert_id()");
+        }};
+
+        static SQL INSERT_SENSE_EVENT = new SQL() {{
+            INSERT_INTO("sense_history");
+            INTO_COLUMNS("created, temperature_value, temperature_dimension, temperature_threshold, humidity_value, " +
+                    "humidity_threshold, read_error, pump_activated, message");
+            INTO_VALUES("now(), ?, ?, ?, ?, ?, ?, ?, ?");
         }};
     }
 }

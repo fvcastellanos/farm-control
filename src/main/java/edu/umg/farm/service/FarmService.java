@@ -127,7 +127,7 @@ public class FarmService {
         }
     }
 
-    private FarmContext.FarmContextBuilder contextBuilder(boolean readError) {
+    private FarmContext.Builder contextBuilder(boolean readError) {
 
         return FarmContext.builder()
                 .humidityThreshold(humidityThreshold)
