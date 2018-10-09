@@ -17,6 +17,21 @@
         <result column="message" property="message"/>
     </resultMap>
 
+    <resultMap id="temperatureReading" type="edu.umg.farm.dao.model.ValueRead">
+        <result column="temperature_value" property="value"/>
+        <result column="created" property="date"/>
+    </resultMap>
+
+    <resultMap id="humidityReading" type="edu.umg.farm.dao.model.ValueRead">
+        <result column="humidity_value" property="value"/>
+        <result column="created" property="date"/>
+    </resultMap>
+
+    <resultMap id="pumpActivation" type="edu.umg.farm.dao.model.PumpActivation">
+        <result column="total_on" property="totalOn"/>
+        <result column="total_off" property="totalOff"/>
+    </resultMap>
+
     <insert id="newEvent" parameterType="edu.umg.farm.dao.model.ReadEvent" useGeneratedKeys="true" keyProperty="id">
         insert into sense_history
         (created, temperature_value, temperature_dimension, temperature_threshold, humidity_value, humidity_threshold, pump_activated,
@@ -31,6 +46,36 @@
         from sense_history
         order by id desc
         limit #{maxLimit}
+    </select>
+
+    <select id="temperatureLatestEvents" resultMap="temperatureReading" parameterType="java.lang.Integer">
+        select temperature_value, created
+        from sense_history
+        order by id desc
+        limit #{maxLimit}
+    </select>
+
+    <select id="humidityLatestEvents" resultMap="humidityReading" parameterType="java.lang.Integer">
+        select humidity_value, created
+        from sense_history
+        order by id desc
+        limit #{maxLimit}
+    </select>
+
+    <select id="pumpActivation" resultMap="pumpActivation">
+        select sum(total_on) total_on, sum(total_off) total_off
+        from (
+            select
+                case pump_on when 1 then sum(pump_on) end total_on,
+                case pump_off when 1 then sum(pump_off) end total_off
+            from (
+                select
+                    case pump_activated when 1 then 1 end pump_on,
+                    case pump_activated WHEN 0 then 1 end pump_off
+                from sense_history
+            ) totals
+            group by pump_on, pump_off
+        ) grand_total
     </select>
 
 </mapper>
