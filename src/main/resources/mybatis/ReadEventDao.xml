@@ -63,7 +63,7 @@
     </select>
 
     <select id="pumpActivation" resultMap="pumpActivation">
-        select sum(total_on) total_on, sum(total_off) total_off
+        select ifnull(sum(total_on), 0) total_on, ifnull(sum(total_off), 0) total_off
         from (
             select
                 case pump_on when 1 then sum(pump_on) end total_on,
