@@ -63,19 +63,13 @@
     </select>
 
     <select id="pumpActivation" resultMap="pumpActivation">
-        select ifnull(sum(total_on), 0) total_on, ifnull(sum(total_off), 0) total_off
-        from (
-            select
-                case pump_on when 1 then sum(pump_on) end total_on,
-                case pump_off when 1 then sum(pump_off) end total_off
-            from (
-                select
-                    case pump_activated when 1 then 1 end pump_on,
-                    case pump_activated WHEN 0 then 1 end pump_off
+         select ifnull(sum(pump_on), 0) total_on, ifnull(sum(pump_off), 0) total_off
+         from (
+                select case pump_activated when 1 then sum(1) end pump_on,
+                       case pump_activated WHEN 0 then sum(1) end pump_off
                 from sense_history
-            ) totals
-            group by pump_on, pump_off
-        ) grand_total
-    </select>
+                group by pump_activated
+         ) grand_total
+     </select>
 
 </mapper>
