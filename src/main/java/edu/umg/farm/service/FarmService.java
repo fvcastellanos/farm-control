@@ -1,10 +1,11 @@
 package edu.umg.farm.service;
 
-import edu.umg.farm.arduino.ArduinoClient;
+import edu.umg.farm.service.model.SensorRead;
 import edu.umg.farm.dao.ReadEventDao;
 import edu.umg.farm.dao.model.ReadEvent;
+import edu.umg.farm.pi.client.PiClient;
+import edu.umg.farm.pi.model.WaterPumpState;
 import edu.umg.farm.service.model.FarmContext;
-import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,20 +18,21 @@ public class FarmService {
     private double humidityThreshold;
     private double temperatureThreshold;
 
-    private ArduinoClient arduinoClient;
+    private PiClient piClient;
 
     private ReadEventDao readEventDao;
 
-    public FarmService(double humidityThreshold, double temperatureThreshold, ArduinoClient arduinoClient, ReadEventDao readEventDao) {
+    public FarmService(double humidityThreshold, double temperatureThreshold, PiClient piClient, ReadEventDao readEventDao) {
         this.humidityThreshold = humidityThreshold;
         this.temperatureThreshold = temperatureThreshold;
-        this.arduinoClient = arduinoClient;
         this.readEventDao = readEventDao;
+        this.piClient = piClient;
     }
 
     public void checkSoil() {
 
         var resultHolder = performHumidityRead()
+                .flatMap(this::performTemperatureRead)
                 .flatMap(this::turnOnWaterPumpIfNecessary)
                 .flatMap(this::publishResult);
 
@@ -39,41 +41,69 @@ public class FarmService {
 
     private Optional<FarmContext> performHumidityRead() {
 
-        logger.info("perform read from remote sensor...");
+        logger.info("perform read from remote humidity sensor...");
 
-        var humidityReadHolder = arduinoClient.readHumiditySensor();
+        var humidityReadHolder = piClient.readHumidity();
 
         if (humidityReadHolder.isPresent()) {
 
+            var response = humidityReadHolder.get();
+            var sensorRead = SensorRead.builder()
+                    .humidityValue(response.getHumidity())
+                    .build();
+
             var context = contextBuilder(false)
-                    .sensorRead(humidityReadHolder.get())
+                    .sensorRead(sensorRead)
                     .build();
 
             return Optional.of(context);
         }
 
         return Optional.of(contextBuilder(true)
-                        .message("can't read from remote sensor")
+                        .message("can't read from humidity sensor")
                         .build());
+    }
+
+    private Optional<FarmContext> performTemperatureRead(FarmContext farmContext) {
+
+        logger.info("perform read from remote temperature sensor...");
+
+        var temperatureReadHolder = piClient.readTemperature();
+
+        if (temperatureReadHolder.isPresent()) {
+
+            var response = temperatureReadHolder.get();
+            var sensorRead = farmContext.getSensorRead();
+
+            sensorRead.setTemperatureValue(response.getTemperature());
+
+            return Optional.of(farmContext);
+        }
+
+        return Optional.of(contextBuilder(true)
+                .message("can't read from humidity sensor")
+                .build());
     }
 
     private Optional<FarmContext> turnOnWaterPumpIfNecessary(FarmContext farmContext) {
 
         var sensorRead = farmContext.getSensorRead();
-        var value = sensorRead.getHumidityValue();
+        var humidityValue = sensorRead.getHumidityValue();
+        var temperatureValue = sensorRead.getTemperatureValue();
 
-        if (value < humidityThreshold) {
+        if ((humidityValue < humidityThreshold) || (temperatureValue > temperatureThreshold)) {
 
             logger.info("humidity factor is below accepted parameters, starting water pump");
-            arduinoClient.startWaterPump();
+
+            piClient.setWaterPump(WaterPumpState.ON);
 
             farmContext.setPumpActivated(true);
             return Optional.of(farmContext);
         }
 
-        logger.info("looks like humidity is at good level");
+        logger.info("looks like humidity and temperature is at good level");
 
-        arduinoClient.stopWaterPump();
+        piClient.setWaterPump(WaterPumpState.OFF);
         farmContext.setPumpActivated(false);
 
         return Optional.of(farmContext);
@@ -97,7 +127,7 @@ public class FarmService {
         }
     }
 
-    private FarmContext.FarmContextBuilder contextBuilder(boolean readError) {
+    private FarmContext.Builder contextBuilder(boolean readError) {
 
         return FarmContext.builder()
                 .humidityThreshold(humidityThreshold)
@@ -119,5 +149,4 @@ public class FarmService {
                 .message(farmContext.getMessage())
                 .build();
     }
-
 }

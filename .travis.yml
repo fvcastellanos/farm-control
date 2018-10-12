@@ -1,0 +1,39 @@
+language: java
+sudo: enabled
+jdk: openjdk10
+
+addons:
+  hosts:
+    - mysql-host
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+      - mysql-client
+
+services:
+  - docker
+
+before_install:
+  - sudo chmod +x scripts/bash/*
+  - sudo apt-get install jmeter
+  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('r00t') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES; SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+  - sudo mysql_upgrade -u root -pr00t
+  - sudo service mysql restart
+  - ./scripts/bash/init-db.sh
+
+jobs:
+  include:
+  - stage: test
+    script:
+      - ./scripts/bash/unit-test.sh
+
+  - stage: integration
+    script:
+      - ./scripts/bash/it-test.sh
+
+#  - stage: performance
+#    script: echo "hello world"
+
+

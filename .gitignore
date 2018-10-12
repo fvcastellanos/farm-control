@@ -30,3 +30,9 @@ target/
 
 node_modules/
 
+# VS Code
+.settings/
+.classpath
+.factorypath
+.project
+.vscode/
