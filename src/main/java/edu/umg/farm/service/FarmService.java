@@ -1,5 +1,6 @@
 package edu.umg.farm.service;
 
+import edu.umg.farm.pi.model.PiResponse;
 import edu.umg.farm.service.model.SensorRead;
 import edu.umg.farm.dao.ReadEventDao;
 import edu.umg.farm.dao.model.ReadEvent;
@@ -31,15 +32,73 @@ public class FarmService {
 
     public void checkSoil() {
 
-        var resultHolder = performHumidityRead()
+        var context = contextBuilder(false)
+                .build();
+
+        var resultHolder = performHumidityRead(context)
                 .flatMap(this::performTemperatureRead)
-                .flatMap(this::turnOnWaterPumpIfNecessary)
+                .flatMap(this::verifyHumidityAndTemperatureLevels)
+                .flatMap(this::activateWaterPump)
                 .flatMap(this::publishResult);
 
         resultHolder.ifPresent(result -> logger.info("soil status: {}", result));
     }
 
-    private Optional<FarmContext> performHumidityRead() {
+    public void pumpAction(int action) {
+
+        var pumpActivated = action == 1;
+
+        var context = contextBuilder(false)
+                .sensorRead(SensorRead.builder().build())
+                .message("MANUAL ACTIVATION")
+                .pumpActivated(pumpActivated)
+                .build();
+
+        activateWaterPump(context)
+                .flatMap(this::publishResult);
+    }
+
+    public Optional<Double> readHumidity() {
+
+        var context = FarmContext.builder()
+                .readError(false)
+                .message("MANUAL ACTIVATION")
+                .build();
+
+        return performHumidityRead(context)
+                .flatMap(this::publishResult)
+                .flatMap(farmContext -> {
+
+                    if (farmContext.isReadError()) {
+                        return Optional.empty();
+                    }
+
+                    return Optional.of(farmContext.getSensorRead().getHumidityValue());
+                });
+    }
+
+    public Optional<Double> readTemperature() {
+
+        var context = FarmContext.builder()
+                .readError(false)
+                .sensorRead(SensorRead.builder().build())
+                .message("MANUAL ACTIVATION")
+                .build();
+
+        return performTemperatureRead(context)
+                .flatMap(this::publishResult)
+                .flatMap(farmContext -> {
+
+                    if (farmContext.isReadError()) {
+                        return Optional.empty();
+                    }
+
+                    return Optional.of(farmContext.getSensorRead().getTemperatureValue());
+                });
+    }
+    // ----------------------------------------------------------------------------------------------------
+
+    private Optional<FarmContext> performHumidityRead(FarmContext farmContext) {
 
         logger.info("perform read from remote humidity sensor...");
 
@@ -52,16 +111,15 @@ public class FarmService {
                     .humidityValue(response.getHumidity())
                     .build();
 
-            var context = contextBuilder(false)
-                    .sensorRead(sensorRead)
-                    .build();
+            farmContext.setSensorRead(sensorRead);
 
-            return Optional.of(context);
+            return Optional.of(farmContext);
         }
 
-        return Optional.of(contextBuilder(true)
-                        .message("can't read from humidity sensor")
-                        .build());
+        farmContext.setReadError(true);
+        farmContext.setMessage("can't read from humidity sensor");
+
+        return Optional.of(farmContext);
     }
 
     private Optional<FarmContext> performTemperatureRead(FarmContext farmContext) {
@@ -85,7 +143,7 @@ public class FarmService {
                 .build());
     }
 
-    private Optional<FarmContext> turnOnWaterPumpIfNecessary(FarmContext farmContext) {
+    private Optional<FarmContext> verifyHumidityAndTemperatureLevels(FarmContext farmContext) {
 
         var sensorRead = farmContext.getSensorRead();
         var humidityValue = sensorRead.getHumidityValue();
@@ -95,16 +153,30 @@ public class FarmService {
 
             logger.info("humidity factor is below accepted parameters, starting water pump");
 
-            piClient.setWaterPump(WaterPumpState.ON);
-
             farmContext.setPumpActivated(true);
             return Optional.of(farmContext);
         }
 
         logger.info("looks like humidity and temperature is at good level");
 
-        piClient.setWaterPump(WaterPumpState.OFF);
         farmContext.setPumpActivated(false);
+        return Optional.of(farmContext);
+    }
+
+    private Optional<FarmContext> activateWaterPump(FarmContext farmContext) {
+
+        logger.info("verifying if pump should be activated");
+
+        if (farmContext.isPumpActivated()) {
+
+            logger.info("water pump activated");
+            piClient.setWaterPump(WaterPumpState.ON);
+
+            return Optional.of(farmContext);
+        }
+
+        logger.info("water pump deactivated");
+        piClient.setWaterPump(WaterPumpState.OFF);
 
         return Optional.of(farmContext);
     }
