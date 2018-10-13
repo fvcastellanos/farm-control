@@ -5,6 +5,7 @@ import edu.umg.farm.dao.model.ReadEvent;
 import edu.umg.farm.dao.model.ValueRead;
 import edu.umg.farm.service.InformationService;
 import edu.umg.farm.web.controllers.model.DashboardModel;
+import edu.umg.farm.web.controllers.model.Routes;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping(Routes.ROOT)
 public class HomeController {
 
     @Autowired
@@ -30,8 +31,7 @@ public class HomeController {
         displayReadEventLimit = 10;
     }
 
-    @GetMapping("/")
-//    @ResponseBody
+    @GetMapping
     public ModelAndView index() {
 
         var model = buildDashboardModel(displayReadEventLimit);
@@ -39,7 +39,7 @@ public class HomeController {
         return new ModelAndView("home/index", Map.of("model", model));
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ModelAndView updateResults(int display) {
 
         this.displayReadEventLimit = display;
