@@ -25,13 +25,17 @@ before_install:
 
 jobs:
   include:
-  - stage: test
+  - stage: unit-tests
     script:
       - ./scripts/bash/unit-test.sh
 
-  - stage: integration
+  - stage: integration-tests
     script:
       - ./scripts/bash/it-test.sh
+
+  - stage: package
+    script:
+      - ./scripts/bash/package.sh
 
 #  - stage: performance
 #    script: echo "hello world"
