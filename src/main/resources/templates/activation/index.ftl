@@ -15,14 +15,14 @@
                         <form action="${MANUAL_ACTIVATION}${READ_HUMIDITY}" method="post" class="form-horizontal">
                             <div class="row form-group">
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="read-humidity">
                                         <i class="fa fa-dot-circle-o"></i> Read humidity
                                     </button>
                                 </div>
                             </div>
                         </form>
                         <div class="row">
-                            <div class="col-md-4 offset-4">
+                            <div class="col-md-4 offset-4" id="humidity-value">
                                 <i class="fa fa-clock"></i>
                                     <#if model.humidity == 0></#if>
                                     <#if model.humidity == -1>Read Error</#if>
@@ -42,14 +42,14 @@
                         <form action="${MANUAL_ACTIVATION}${READ_TEMPERATURE}" method="post" class="form-horizontal">
                             <div class="row form-group">
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="read-temperature">
                                         <i class="fa fa-dot-circle-o"></i> Read temperature
                                     </button>
                                 </div>
                             </div>
                         </form>
                         <div class="row">
-                            <div class="col-md-4 offset-4">
+                            <div class="col-md-4 offset-4" id="temperature-value">
                                 <i class="fa fa-clock"></i>
                                     <#if model.temperature == 0></#if>
                                     <#if model.temperature == -1>Read Error</#if>
@@ -77,7 +77,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="btn-activate">
                                         <i class="fa fa-dot-circle-o"></i> Send command
                                     </button>
                                 </div>

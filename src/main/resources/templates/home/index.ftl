@@ -5,7 +5,7 @@
             <div class="col-md-12">
                 <h3 class="heading-title">Sensor Readings</h3>
                 <div class="table-responsive table--no-card m-b-30">
-                    <table class="table table-borderless table-striped table-earning">
+                    <table class="table table-borderless table-striped table-earning" id="sensor-reading">
                         <thead>
                         <tr>
                             <th>id</th>
@@ -49,13 +49,13 @@
                             <div class="row form-group">
                                 <div class="col-md-4">
                                     <select id="display" class="form-control" name="display">
-                                        <option value="10" <#if model.displayLimit == 10>selected</#if>>10</option>
-                                        <option value="20" <#if model.displayLimit == 20>selected</#if>>20</option>
-                                        <option value="50" <#if model.displayLimit == 50>selected</#if>>50</option>
+                                        <option id="value10" value="10" <#if model.displayLimit == 10>selected</#if>>10</option>
+                                        <option id="value20" value="20" <#if model.displayLimit == 20>selected</#if>>20</option>
+                                        <option id="value50" value="50" <#if model.displayLimit == 50>selected</#if>>50</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button id="displayRows" type="submit" class="btn btn-primary">
                                         <i class="fa fa-dot-circle-o"></i> Update
                                     </button>
                                 </div>
