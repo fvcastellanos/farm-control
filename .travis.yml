@@ -39,7 +39,7 @@ jobs:
 
   - stage: functional-tests
     script:
-      - ./scripts/bash/functional-tests.sh
+      - ./scripts/bash/functional-test.sh
 
 #  - stage: performance
 #    script: echo "hello world"
