@@ -1,22 +1,22 @@
 version: '2'
 services:
-  mysql:
-    image: mysql:5.7
-    container_name: mysql-host
-    environment:
-      - MYSQL_ROOT_PASSWORD=r00t
-      - MYSQL_DATABASE=farm_control
-      - MYSQL_USER=farm_control
-      - MYSQL_PASSWORD=control123
-    ports:
-      - "43306:3306"
+#  mysql:
+#    image: mysql:5.7
+#    container_name: mysql-host
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=r00t
+#      - MYSQL_DATABASE=farm_control
+#      - MYSQL_USER=farm_control
+#      - MYSQL_PASSWORD=control123
+#    ports:
+#      - "43306:3306"
 
   farm-control:
     container_name: farm-control
     image: apps.cavitos.net/farm-control:test
     ports:
       - "8080:8080"
-    links:
-      - mysql
-    depends_on:
-      - mysql
+#    links:
+#      - mysql
+#    depends_on:
+#      - mysql
