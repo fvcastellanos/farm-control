@@ -25,10 +25,11 @@ before_install:
   - sudo mysql_upgrade -u root -pr00t
   - sudo service mysql restart
   - ./scripts/bash/init-db.sh
-#  - sudo rm /usr/local/bin/docker-compose
+  - sudo rm /usr/local/bin/docker-compose
 #  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-#  - chmod +x docker-compose
-#  - sudo mv docker-compose /usr/local/bin
+  - curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 jobs:
   include:
