@@ -5,6 +5,7 @@ jdk: openjdk10
 addons:
   hosts:
     - mysql-host
+    - app-host
   apt:
     sources:
       - mysql-5.7-trusty
