@@ -37,6 +37,10 @@ jobs:
     script:
       - ./scripts/bash/package.sh
 
+  - stage: functional-tests
+    script:
+      - ./scripts/bash/funcional-tests.sh
+
 #  - stage: performance
 #    script: echo "hello world"
 
