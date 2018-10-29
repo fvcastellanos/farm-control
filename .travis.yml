@@ -5,12 +5,16 @@ jdk: openjdk10
 addons:
   hosts:
     - mysql-host
+    - app-host
   apt:
     sources:
       - mysql-5.7-trusty
     packages:
       - mysql-server
       - mysql-client
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.4.2
 
 services:
   - docker
@@ -22,18 +26,29 @@ before_install:
   - sudo mysql_upgrade -u root -pr00t
   - sudo service mysql restart
   - ./scripts/bash/init-db.sh
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 jobs:
   include:
-  - stage: test
+  - stage: unit-tests
     script:
       - ./scripts/bash/unit-test.sh
 
-  - stage: integration
+  - stage: integration-tests
     script:
       - ./scripts/bash/it-test.sh
 
+  - stage: package
+    script:
+      - ./scripts/bash/package.sh
+
+#  - stage: functional-tests
+#    script:
+#      - ./scripts/bash/functional-test.sh
+
 #  - stage: performance
 #    script: echo "hello world"
-
 
